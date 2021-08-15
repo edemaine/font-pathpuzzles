@@ -24,12 +24,12 @@ class Display
     @background = @svg.rect @puzzle.width() + 0.5, @puzzle.height() + 0.5
     .move -0.5, -0.5
     .addClass 'background'
-    @puzzleGroup = @svg.group()
-    .addClass 'puzzle'
     @solutionGroup = @svg.group()
     .addClass 'solution'
     @userGroup = @svg.group()
     .addClass 'user'
+    @puzzleGroup = @svg.group()
+    .addClass 'puzzle'
     @errorsGroup = @svg.group()
     .addClass 'errors'
     @drawPuzzle()
@@ -71,6 +71,8 @@ class Display
           else
             int = parseInt cell
             unless isNaN int
+              @puzzleGroup.rect 0.5, 0.66
+              .center x, y
               @puzzleGroup.text cell
               .attr 'x', x
               .attr 'y', y + 8/36
