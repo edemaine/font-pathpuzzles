@@ -143,6 +143,12 @@ class Player extends Display
         coord
       else
         null
+    event2cell = (e) =>
+      pt = @svg.point e.clientX, e.clientY
+      [
+        Math.round pt.x
+        Math.round pt.y
+      ]
     @svg.mousemove (e) =>
       edge = event2coord e
       if edge?
@@ -151,30 +157,43 @@ class Player extends Display
           rotate: 45
           translate: edge
         .opacity 0.333
+        if e.buttons and @last?  # drag behavior
+          cell = event2cell e
+          unless cell[0] in [Math.floor(@last.edge[0]),
+                             Math.ceil(@last.edge[0])] and
+                 cell[1] in [Math.floor(@last.edge[1]),
+                             Math.ceil(@last.edge[1])]
+            @toggle edge, @last.state
       else
         @highlight.opacity 0
     @svg.on 'mouseleave', (e) =>
       @highlight.opacity 0
-    @svg.click (e) =>
+    @svg.mousedown (e) =>
       edge = event2coord e
       return unless edge?
-      @click edge
-  click: (edge, links = true) ->
+      @toggle edge, null
+  toggle: (edge, state, linked = true) ->
     if @lines[edge]?
       @lines[edge].remove()
       delete @lines[edge]
     dir = edge2dir edge
-    @puzzle.edges[edge] =
-      switch @puzzle.edges[edge]
-        when undefined
-          true
-        when true
-          false
-        when false
-          undefined
+    if state == null
+      @puzzle.edges[edge] =
+        switch @puzzle.edges[edge]
+          when undefined
+            true
+          when true
+            false
+          when false
+            undefined
+    else
+      @puzzle.edges[edge] = state
     if @puzzle.edges[edge] == false and
        not document.getElementById('walls').checked
       @puzzle.edges[edge] = undefined
+    @last =
+      edge: edge
+      state: @puzzle.edges[edge]
     if @puzzle.edges[edge]?
       if @puzzle.edges[edge] == false
         dir = perp dir
@@ -188,9 +207,9 @@ class Player extends Display
     else
       @svg.removeClass 'solved'
 
-    if @linked? and links
+    if @linked? and linked
       for link in @linked when link != @
-        link.click edge, false
+        link.toggle edge, @last.state, false
 
 fontGUI = ->
   app = new FontWebappHTML
