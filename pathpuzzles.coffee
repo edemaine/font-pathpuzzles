@@ -149,7 +149,8 @@ class Player extends Display
         Math.round pt.x
         Math.round pt.y
       ]
-    @svg.mousemove (e) =>
+    @svg.on 'pointermove', (e) =>
+      e.preventDefault()
       edge = event2coord e
       if edge?
         @highlight
@@ -166,13 +167,32 @@ class Player extends Display
             @toggle edge, @last.state
       else
         @highlight.opacity 0
-    @svg.on 'mouseleave', (e) =>
+    @svg.on 'pointerleave', (e) =>
       @highlight.opacity 0
-    @svg.mousedown (e) =>
+      @last = undefined
+    @svg.on 'pointerdown', (e) =>
+      e.preventDefault()
+      e.target.setPointerCapture e.pointerId
       edge = event2coord e
       return unless edge?
-      @toggle edge, null
-  toggle: (edge, state, linked = true) ->
+      @toggle edge,
+        switch e.button
+          when 0  # left click
+            null  # => cycle through path, wall, empty
+          when 1  # middle click
+            false # => wall
+          when 2  # right click
+            undefined # => empty
+          when 5  # pen eraser
+            undefined # => empty
+          else
+            null
+    for ignore in ['click', 'contextmenu', 'auxclick', 'dragstart', 'touchmove']
+      @svg.on ignore, (e) -> e.preventDefault()
+  toggle: (...args) ->
+    for copy in @linked ? [@]
+      copy.toggleSelf ...args
+  toggleSelf: (edge, state) ->
     if @lines[edge]?
       @lines[edge].remove()
       delete @lines[edge]
@@ -206,10 +226,6 @@ class Player extends Display
       @svg.addClass 'solved'
     else
       @svg.removeClass 'solved'
-
-    if @linked? and linked
-      for link in @linked when link != @
-        link.toggle edge, @last.state, false
 
 fontGUI = ->
   app = new FontWebappHTML
