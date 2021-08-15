@@ -26,7 +26,8 @@ svg
 
   rect.background
     fill: white
-    stroke: none
+    stroke-width: 0.35
+    stroke: rgba(0,0,0,0)
   line
     stroke-width: minorWidth
     stroke: black
@@ -56,3 +57,8 @@ svg
     /.font-solved &
       cursor: default
       opacity: 0
+
+  &.solved
+    rect.background
+      transition: stroke 1s
+      stroke: purple

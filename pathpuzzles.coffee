@@ -8,20 +8,88 @@ halfWallLength = wallLength / 2
 
 class Puzzle
   constructor: (@cell) ->
+    @width = (@cell[0].length + 1) // 2
+    @height = (@cell.length + 1) // 2
     @edges = {}
-  width: -> (@cell[0].length + 1) // 2
-  height: -> (@cell.length + 1) // 2
+    @rowSums = {}
+    @colSums = {}
+    for row, i in @cell
+      unless isNaN (value = parseInt row[0])
+        @rowSums[i / 2] = value
+    for col, j in @cell[0]
+      unless isNaN (value = parseInt col)
+        @colSums[j / 2] = value
+  cellDegrees: ->
+    degree = {}
+    increment = (x, y) ->
+      degree[[x,y]] ?= 0
+      degree[[x,y]]++
+    for key, value of @edges when value == true
+      [x, y] = (parseFloat(z) for z in key.split ',')
+      increment Math.floor(x), Math.floor(y)
+      increment Math.ceil(x), Math.ceil(y)
+    degree
   checkSolved: ->
-    rects = []
-    for xy of @clues
-      rect = @checkClue xy
-      return null unless rect?
-      rects.push rect
-    rects
+    ## Check degrees are all 2
+    for key, value of @cellDegrees() when value != 2
+      [x, y] = (parseFloat(z) for z in key.split ',')
+      if 0 < x < @width and 0 < y < @height
+        return false
+    #console.log 'pass degree'
+    ## Check row/column sums
+    rowSums = {}
+    colSums = {}
+    for key, value of @edges when value == true
+      [x, y] = (parseFloat(z) for z in key.split ',')
+      for [vx, vy] in [[Math.floor(x), Math.floor(y)],
+                       [Math.ceil(x), Math.ceil(y)]]
+        if 0 < vx < @width and 0 < vy < @height
+          rowSums[vy] ?= 0
+          rowSums[vy]++
+          colSums[vx] ?= 0
+          colSums[vx]++
+    for i, target of @rowSums
+      return false unless target == (rowSums[i] ? 0) / 2
+    for j, target of @colSums
+      return false unless target == (colSums[j] ? 0) / 2
+    #console.log 'pass sums'
+    ## Check connectivity
+    ends =
+      for key, value of @edges when value == true
+        [x, y] = (parseFloat(z) for z in key.split ',')
+        continue if 1 <= x <= @width-1 and 1 <= y <= @height-1
+        [x, y]
+    here = ends[0]
+    visited = {}
+    visited[here] = true
+    if here[0] < 1 or here[1] < 1
+      last = (Math.floor(z) for z in here)
+      here = (Math.ceil(z) for z in here)
+    else if here[0] > @width-1 or here[1] > @height-1
+      last = (Math.ceil(z) for z in here)
+      here = (Math.floor(z) for z in here)
+    else
+      throw new Error 'assertion error: invalid end'
+    loop
+      for dir in [[-0.5,0], [+0.5,0], [0,-0.5], [0,+0.5]]
+        neighbor = add here, dir
+        next = add neighbor, dir
+        continue if eq next, last  # prevent revisiting previous vertex
+        break if @edges[neighbor] == true
+      unless @edges[neighbor] == true
+        throw new Error 'assertion error: no neighbor'
+      visited[neighbor] = true
+      break if eq neighbor, ends[1]
+      last = here
+      here = next
+    for key, value of @edges  when value == true
+      return false unless visited[key]
+    #console.log 'pass connectivity'
+    true
 
 class Display
   constructor: (@svg, @puzzle) ->
-    @background = @svg.rect @puzzle.width() + 0.5, @puzzle.height() + 0.5
+    @background = @svg.rect @puzzle.width + 0.5, @puzzle.height + 0.5
     .move -0.5, -0.5
     .addClass 'background'
     @solutionGroup = @svg.group()
@@ -38,7 +106,7 @@ class Display
   drawPuzzle: ->
     @puzzleGroup.clear()
     @solutionGroup.clear()
-    @background.size @puzzle.width() + 0.5, @puzzle.height() + 0.5
+    @background.size @puzzle.width + 0.5, @puzzle.height + 0.5
     neighbor = (di, dj) => @puzzle.cell[i+di]?[j+dj] == '+'
     for row, i in @puzzle.cell
       y = i / 2
@@ -79,27 +147,20 @@ class Display
     @svg.viewbox
       x: -0.5 - majorWidth/2
       y: -0.5 - majorWidth/2
-      width: @puzzle.width() + 0.5 + majorWidth
-      height: @puzzle.height() + 0.5 + majorWidth
+      width: @puzzle.width + 0.5 + majorWidth
+      height: @puzzle.height + 0.5 + majorWidth
 
   drawSolution: ->
     @solutionGroup.clear()
 
   drawErrors: ->
     @errorsGroup.clear()
-    degree = {}
-    increment = (x, y) ->
-      degree[[x,y]] ?= 0
-      degree[[x,y]]++
-    for key, value of @puzzle.edges when value == true
-      [x, y] = (parseFloat(z) for z in key.split ',')
-      increment Math.floor(x), Math.floor(y)
-      increment Math.ceil(x), Math.ceil(y)
-    for key, value of degree when value > 2
+    for key, value of @puzzle.cellDegrees() when value > 2
       [x, y] = (parseFloat(z) for z in key.split ',')
       @errorsGroup.circle 0.33, 0.33
       .center x, y
 
+eq = (u,v) -> u[0] == v[0] and u[1] == v[1]
 add = (u,v) -> [u[0] + v[0], u[1] + v[1]]
 sub = (u,v) -> [u[0] - v[0], u[1] - v[1]]
 perp = (v) -> [-v[1], v[0]]
@@ -140,7 +201,7 @@ class Player extends Display
         0.5 * Math.round 2 * rt2o2 * (rotated.x - rotated.y)
         0.5 * Math.round 2 * rt2o2 * (rotated.x + rotated.y)
       ]
-      if 0 < coord[0] < @puzzle.width() and 0 < coord[1] < @puzzle.height() and
+      if 0 < coord[0] < @puzzle.width and 0 < coord[1] < @puzzle.height and
          @puzzle.cell[coord[1] * 2][coord[0] * 2] != 'x'
         coord
       else
@@ -242,7 +303,7 @@ class Player extends Display
       @lines[edge] = @userGroup.line p..., q...
       .addClass if @puzzle.edges[edge] then 'path' else 'wall'
     @drawErrors()
-    if solved = @puzzle.checkSolved()
+    if @puzzle.checkSolved()
       @svg.addClass 'solved'
     else
       @svg.removeClass 'solved'
