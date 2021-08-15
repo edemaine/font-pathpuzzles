@@ -1,0 +1,15 @@
+{
+  "name": "font-pathpuzzls",
+  "version": "0.0.1",
+  "description": "",
+  "main": "pathpuzzles.js",
+  "dependencies": {
+    "json-stringify-pretty-compact": "^3.0.0"
+  },
+  "devDependencies": {
+  },
+  "scripts": {
+  },
+  "author": "Erik Demaine",
+  "license": "MIT"
+}
