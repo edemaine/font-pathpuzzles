@@ -55,6 +55,41 @@ html
     hr.noprint
 
     p.noprint.
+      Path puzzles are a type of pencil-and-paper logic puzzle
+      <a href="https://www.enigami.fun/the-path-puzzles-book">introduced by Roderick Kimball in 2013</a>
+      and featured in <i>The New York Times</i>'s
+      <a href="https://wordplay.blogs.nytimes.com/2014/07/28/path-2/">Wordplay blog in 2014</a>.
+      In its simplest form, a puzzle consists of a grid of cells with two
+      &ldquo;doors&rdquo; on the boundary, and numerical constraints
+      on some of the rows and columns.
+      The goal is to draw one noncrossing path between the two boundary doors
+      so that the number of cells visited in each constrained row or column
+      matches the specified number (if any).
+      Like most pencil-and-paper logic puzzles,
+      <a href="https://erikdemaine.org/papers/PathPuzzles_GC/">path puzzles are NP-complete</a>,
+      meaning that there is no efficient algorithm to solve them,
+      assuming P&nbsp;&ne;&nbsp;NP.
+
+    p.noprint.
+      This typeface features 26 uniquely solvable 6&nbsp;&times;&nbsp;6
+      path puzzles, one for each letter of the alphabet.
+      In the <b>solved font</b>, the paths form the letter shapes.
+      In the <b>puzzle font</b>, you can interactively solve the puzzle
+      by <b>clicking on grid edges</b> to toggle whether they are part of
+      the solution path.
+      If you <b>Enable third &ldquo;wall&rdquo; state</b>, then you can
+      click on an edge a second time to make it a wall, indicating that
+      the path can't go there.
+      Right clicking acts as an eraser.
+      Middle clicking draws with walls if they are enabled.
+      You can drag (slowly) to paint many edges or walls at once.
+      If you connect more than two edges at any vertex,
+      they will highlight red.
+      As mentioned in <a href="https://erikdemaine.org/papers/PathPuzzles_GC/">our paper</a>,
+      we verified by exhaustive search
+      that each of these puzzles has a unique solution.
+
+    p.noprint.
       Check out <a href="http://erikdemaine.org/fonts/">other mathematical and
       puzzle fonts</a>. &bull; Feedback or not working?
       <A HREF="mailto:edemaine+fonts@mit.edu">Email Erik</A>. &bull;
