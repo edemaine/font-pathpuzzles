@@ -20,7 +20,7 @@ class Puzzle
 
 class Display
   constructor: (@svg, @puzzle) ->
-    @background = @svg.rect @puzzle.width(), @puzzle.height()
+    @background = @svg.rect @puzzle.width() + 0.5, @puzzle.height() + 0.5
     .move -0.5, -0.5
     .addClass 'background'
     @puzzleGroup = @svg.group()
@@ -37,7 +37,7 @@ class Display
   drawPuzzle: ->
     @puzzleGroup.clear()
     @solutionGroup.clear()
-    @background.size @puzzle.width(), @puzzle.height()
+    @background.size @puzzle.width() + 0.5, @puzzle.height() + 0.5
     neighbor = (di, dj) => @puzzle.cell[i+di]?[j+dj] == '+'
     for row, i in @puzzle.cell
       y = i / 2
@@ -76,8 +76,8 @@ class Display
     @svg.viewbox
       x: -0.5 - majorWidth/2
       y: -0.5 - majorWidth/2
-      width: @puzzle.width() + majorWidth
-      height: @puzzle.height() + majorWidth
+      width: @puzzle.width() + 0.5 + majorWidth
+      height: @puzzle.height() + 0.5 + majorWidth
 
   drawSolution: ->
     @solutionGroup.clear()
