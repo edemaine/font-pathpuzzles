@@ -24,7 +24,7 @@ plus = ->
     y1 *= 2 unless @neighbor(0,-1).includes 's'
     y2 *= 2 unless @neighbor(0,+1).includes 's'
   """
-    <symbol viewBox="0 0 0 0" overflowBox="-9 -9 9 9" style="overflow: visible">
+    <symbol viewBox="0 0 0 0" overflowBox="#{x1} #{y1} #{x2 - x1 + 1} #{y2 - y1 + 1}" style="overflow: visible">
       <line x1="#{x1}" x2="#{x2}" stroke="black" stroke-width="1" />
       <line y1="#{y1}" y2="#{y2}" stroke="black" stroke-width="1" />
     </symbol>
