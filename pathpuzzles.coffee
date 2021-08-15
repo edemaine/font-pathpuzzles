@@ -8,6 +8,7 @@ halfWallLength = wallLength / 2
 
 class Puzzle
   constructor: (@cell) ->
+    @edges = {}
   width: -> (@cell[0].length + 1) // 2
   height: -> (@cell.length + 1) // 2
   checkSolved: ->
@@ -27,8 +28,8 @@ class Display
     .addClass 'puzzle'
     @solutionGroup = @svg.group()
     .addClass 'solution'
-    @edgesGroup = @svg.group()
-    .addClass 'edges'
+    @userGroup = @svg.group()
+    .addClass 'user'
     @errorsGroup = @svg.group()
     .addClass 'errors'
     @drawPuzzle()
@@ -84,7 +85,18 @@ class Display
 
   drawErrors: ->
     @errorsGroup.clear()
-    #return unless (key for key of @puzzle.edges).length
+    degree = {}
+    increment = (x, y) ->
+      degree[[x,y]] ?= 0
+      degree[[x,y]]++
+    for key, value of @puzzle.edges when value == true
+      [x, y] = (parseFloat(z) for z in key.split ',')
+      increment Math.floor(x), Math.floor(y)
+      increment Math.ceil(x), Math.ceil(y)
+    for key, value of degree when value > 2
+      [x, y] = (parseFloat(z) for z in key.split ',')
+      @errorsGroup.circle 0.33, 0.33
+      .center x, y
 
 add = (u,v) -> [u[0] + v[0], u[1] + v[1]]
 sub = (u,v) -> [u[0] - v[0], u[1] - v[1]]
@@ -101,7 +113,6 @@ class Player extends Display
     super ...args
     @highlightEnable()
   highlightEnable: ->
-    @state = {}
     @lines = {}
     rt2o2 = Math.sqrt(2)/2
     @highlight = @svg.rect rt2o2, rt2o2
@@ -127,7 +138,7 @@ class Player extends Display
         0.5 * Math.round 2 * rt2o2 * (rotated.x - rotated.y)
         0.5 * Math.round 2 * rt2o2 * (rotated.x + rotated.y)
       ]
-      if 0 < coord[0] < @puzzle.nx and 0 < coord[1] < @puzzle.ny
+      if 0 < coord[0] < @puzzle.width() and 0 < coord[1] < @puzzle.height()
         coord
       else
         null
@@ -161,15 +172,15 @@ class Player extends Display
         when false
           undefined
     if @puzzle.edges[edge] == false and
-       not document.getElementById('connectors').checked
+       not document.getElementById('walls').checked
       @puzzle.edges[edge] = undefined
     if @puzzle.edges[edge]?
       if @puzzle.edges[edge] == false
         dir = perp dir
       p = sub edge, dir
       q = add edge, dir
-      @lines[edge] = @edgesGroup.line p..., q...
-      .addClass if @puzzle.edges[edge] then 'on' else 'con'
+      @lines[edge] = @userGroup.line p..., q...
+      .addClass if @puzzle.edges[edge] then 'path' else 'wall'
     @drawErrors()
     if solved = @puzzle.checkSolved()
       @svg.addClass 'solved'
@@ -196,7 +207,7 @@ fontGUI = ->
       letter = window.font[char]
       return unless letter?
       svg = SVG().addTo parent
-      box = new Display svg, new Puzzle letter
+      box = new Player svg, new Puzzle letter
     linkIdenticalChars: (glyphs) ->
       glyph.linked = glyphs for glyph in glyphs
 

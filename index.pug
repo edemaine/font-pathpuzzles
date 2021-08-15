@@ -40,6 +40,11 @@ html
           label(for="solved") Solved&nbsp;font
         td
           button#reset Reset all puzzles
+          p
+          .text-right.d-inline-block
+            input#walls(type="checkbox", name="walls")
+            label(for="walls")
+              | Enable third <br> &ldquo;wall&rdquo; state
 
     #size.noprint
 
