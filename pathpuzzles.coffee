@@ -149,6 +149,12 @@ class Player extends Display
         Math.round pt.x
         Math.round pt.y
       ]
+    event2corner = (e) =>
+      pt = @svg.point e.clientX, e.clientY
+      [
+        0.5 + Math.round pt.x - 0.5
+        0.5 + Math.round pt.y - 0.5
+      ]
     @svg.on 'pointermove', (e) =>
       e.preventDefault()
       edge = event2coord e
@@ -159,11 +165,23 @@ class Player extends Display
           translate: edge
         .opacity 0.333
         if e.buttons and @last?  # drag behavior
-          cell = event2cell e
-          unless cell[0] in [Math.floor(@last.edge[0]),
-                             Math.ceil(@last.edge[0])] and
-                 cell[1] in [Math.floor(@last.edge[1]),
-                             Math.ceil(@last.edge[1])]
+          unless (
+            switch @last.state
+              when true  # path
+                cell = event2cell e
+                cell[0] in [Math.floor(@last.edge[0]),
+                            Math.ceil(@last.edge[0])] and
+                cell[1] in [Math.floor(@last.edge[1]),
+                            Math.ceil(@last.edge[1])]
+              when false  # wall
+                corner = event2corner e
+                corner[0] in [0.5 + Math.floor(@last.edge[0] - 0.5),
+                              0.5 + Math.ceil(@last.edge[0])] and
+                corner[1] in [0.5 + Math.floor(@last.edge[1] - 0.5),
+                              0.5 + Math.ceil(@last.edge[1] - 0.5)]
+              when undefined  # erase
+                false         # always
+          )
             @toggle edge, @last.state
       else
         @highlight.opacity 0
