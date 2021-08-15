@@ -138,7 +138,8 @@ class Player extends Display
         0.5 * Math.round 2 * rt2o2 * (rotated.x - rotated.y)
         0.5 * Math.round 2 * rt2o2 * (rotated.x + rotated.y)
       ]
-      if 0 < coord[0] < @puzzle.width() and 0 < coord[1] < @puzzle.height()
+      if 0 < coord[0] < @puzzle.width() and 0 < coord[1] < @puzzle.height() and
+         @puzzle.cell[coord[1] * 2][coord[0] * 2] != 'x'
         coord
       else
         null
