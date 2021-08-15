@@ -14,7 +14,7 @@ for filename in fs.readdirSync dirname
   ## Parse TSV
   tsv = fs.readFileSync pathname, encoding: 'utf8'
   table =
-    for row in tsv.split '\n'
+    for row in tsv.trimEnd().split '\n'
       row.split '\t'
 
   ## Add missing walls, assuming all numbers are on top and left
@@ -26,11 +26,11 @@ for filename in fs.readdirSync dirname
   wallRow = (row) ->
     [row[0], ...(wall char for char in row[1...-1]), row[row.length-1]]
   table[1] = wallRow table[1]
-  table[table.length-2] = wallRow table[table.length-2]
+  table[table.length-1] = wallRow table[table.length-1]
   for row in table[1..]
     row[1] = wall row[1]
     row[row.length-1] = wall row[row.length-1]
 
   font[letter] = table
 
-fs.writeFileSync 'font.js', stringify font
+fs.writeFileSync 'font.js', "window.font = #{stringify font};\n"

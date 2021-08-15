@@ -1,0 +1,67 @@
+// These widths must match those in pathpuzzles.coffee
+majorWidth = 3/36
+minorWidth = 1/36
+fontSize = 24px/36px
+
+@media print
+  .noprint
+    display: none
+
+.w-100
+  width: 100%
+.text-left
+  text-align: left
+.text-right
+  text-align: right
+.align-middle
+  vertical-align: middle
+
+svg
+  width: 100%
+  height: 100%
+
+  rect.background
+    fill: white
+    stroke: none
+  g line
+    stroke-width: minorWidth
+    stroke: black
+    stroke-linecap: square
+  text
+    font-family: Myriad Pro, sans-serif
+    font-size: fontSize
+    text-anchor: middle
+
+  .solution line
+    stroke-width: majorWidth
+    //stroke: rgba(0,0,0,0)
+
+/*
+    &.on
+      stroke: black
+      stroke-linecap: square
+    &.con
+      stroke: gray
+      stroke-width: conWidth
+      stroke-linecap: round
+
+    &.toggle
+      cursor: pointer
+      stroke-width: 0.4
+
+      &:hover
+        stroke: hsla(50,100%,50%,0.5) // rgba(0,0,0,0.5)
+*/
+
+  .errors
+    circle
+      fill: hsl(0,100%,50%)
+      stroke-width: 0.1
+      stroke: hsl(0,100%,40%)
+
+  .target
+    fill: purple
+    cursor: pointer
+    /.font-solved &
+      cursor: default
+      opacity: 0
