@@ -8,15 +8,20 @@ html
     script(type="text/javascript", src="node_modules/font-webapp/font-webapp.js")
     script(type="text/javascript", src="font.js")
     script(type="text/javascript", src="pathpuzzles.js")
+    script(type="text/javascript").
+      if (/[?&]hud=0/.test(window.location.search)) // avoid blinking
+        document.documentElement.classList.add('hud-false');
     style
-      include:stylus pathpuzzles.styl
       :stylus
+        .hud-false > body > *:not(#output), #hud
+          display: none
         .font-puzzle
           .solution
             opacity: 0
         .font-solved
           .user, .errors
             opacity: 0
+      include:stylus pathpuzzles.styl
     //#include virtual="../../analytics.html"
   body
     table.w-100
@@ -45,12 +50,16 @@ html
             input#walls(type="checkbox", name="walls")
             label(for="walls")
               | Enable third <br> &ldquo;wall&rdquo; state
+            input#hud(type="checkbox", checked)
 
     #size.noprint
 
     p
 
     #output.w-100
+
+    .text-right
+      button#nohud(title="Use browser back button to restore interface.") Hide all but font rendering
 
     hr.noprint
 
