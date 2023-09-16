@@ -14,10 +14,10 @@ class Puzzle
     @rowSums = {}
     @colSums = {}
     for row, i in @cell
-      unless isNaN (value = parseInt row[0])
+      unless isNaN (value = parseInt row[0], 10)
         @rowSums[i / 2] = value
     for col, j in @cell[0]
-      unless isNaN (value = parseInt col)
+      unless isNaN (value = parseInt col, 10)
         @colSums[j / 2] = value
   cellDegrees: ->
     degree = {}
@@ -29,16 +29,17 @@ class Puzzle
       increment Math.floor(x), Math.floor(y)
       increment Math.ceil(x), Math.ceil(y)
     degree
-  checkSolved: ->
-    ## Check degrees are all 2
-    for key, value of @cellDegrees() when value != 2
-      [x, y] = (parseFloat(z) for z in key.split ',')
-      if 0 < x < @width and 0 < y < @height
-        return false
-    #console.log 'pass degree'
-    ## Check row/column sums
+  actualSums: ->
     rowSums = {}
     colSums = {}
+    for key of @cellDegrees()
+      [x, y] = (parseFloat(z) for z in key.split ',')
+      if 0 < x < @width and 0 < y < @height
+        rowSums[y] ?= 0
+        rowSums[y]++
+        colSums[x] ?= 0
+        colSums[x]++
+    ### Old code assumed correct degrees:
     for key, value of @edges when value == true
       [x, y] = (parseFloat(z) for z in key.split ',')
       for [vx, vy] in [[Math.floor(x), Math.floor(y)],
@@ -48,10 +49,21 @@ class Puzzle
           rowSums[vy]++
           colSums[vx] ?= 0
           colSums[vx]++
+    ###
+    {rowSums, colSums}
+  checkSolved: ->
+    ## Check degrees are all 2
+    for key, value of @cellDegrees() when value != 2
+      [x, y] = (parseFloat(z) for z in key.split ',')
+      if 0 < x < @width and 0 < y < @height
+        return false
+    #console.log 'pass degree'
+    ## Check row/column sums
+    {rowSums, colSums} = @actualSums()
     for i, target of @rowSums
-      return false unless target == (rowSums[i] ? 0) / 2
+      return false unless target == (rowSums[i] ? 0)
     for j, target of @colSums
-      return false unless target == (colSums[j] ? 0) / 2
+      return false unless target == (colSums[j] ? 0)
     #console.log 'pass sums'
     ## Check connectivity
     ends =
@@ -108,6 +120,8 @@ class Display
     @solutionGroup.clear()
     @background.size @puzzle.width + 0.5, @puzzle.height + 0.5
     neighbor = (di, dj) => @puzzle.cell[i+di]?[j+dj] == '+'
+    @rowRect = {}
+    @colRect = {}
     for row, i in @puzzle.cell
       y = i / 2
       for cell, j in row
@@ -137,10 +151,15 @@ class Display
             else if j % 2 == 1 and i % 2 == 0
               @solutionGroup.line x - 0.5, y, x + 0.5, y
           else
-            int = parseInt cell
+            int = parseInt cell, 10
             unless isNaN int
+              rect =
               @puzzleGroup.rect 0.5, 0.66
               .center x, y
+              if x == 0
+                @rowRect[y] = rect
+              else if y == 0
+                @colRect[x] = rect
               @puzzleGroup.text cell
               .attr 'x', x
               .attr 'y', y + 8/36
@@ -159,6 +178,18 @@ class Display
       [x, y] = (parseFloat(z) for z in key.split ',')
       @errorsGroup.circle 0.33, 0.33
       .center x, y
+
+    {rowSums, colSums} = @puzzle.actualSums()
+    setCorrect = (rect, bool) ->
+      return unless rect?
+      if bool
+        rect.addClass 'correct'
+      else
+        rect.removeClass 'correct'
+    for i, target of @puzzle.rowSums
+      setCorrect @rowRect[i], target == (rowSums[i] ? 0)
+    for j, target of @puzzle.colSums
+      setCorrect @colRect[j], target == (colSums[j] ? 0)
 
 eq = (u,v) -> u[0] == v[0] and u[1] == v[1]
 add = (u,v) -> [u[0] + v[0], u[1] + v[1]]
